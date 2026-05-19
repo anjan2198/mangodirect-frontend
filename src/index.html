@@ -3648,40 +3648,45 @@ async function renderAdminProducts() {
   list.innerHTML = '<p style="color:#8B6914;">Loading products...</p>';
   const data = await backendAdminFetch('/api/products');
   const prods = data?.products || data || [];
-  if (!prods.length) { list.innerHTML = '<p style="color:#8B6914;">No products in database. They load from frontend code.</p>'; return; }
-  list.innerHTML = prods.map(p => `
+  if (!prods.length) { list.innerHTML = '<p style="color:#8B6914;">No products in database.</p>'; return; }
+  list.innerHTML = prods.map(p => {
+    const gallery = (p.gallery || []).slice(0, 5); // Show up to 5 images
+    return `
     <div class="product-edit-card">
       <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
-        <img src="${p.img||''}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.style.display='none'"/>
+        ${gallery.length > 0 ? `<img src="${gallery[0]}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.style.display='none'"/>` : ''}
         <div style="flex:1;">
           <div style="font-weight:800;color:#3D1F00;">${p.name}</div>
-          <div style="font-size:0.8rem;color:#8B6914;">${p.variety} • ${p.badge||''}</div>
+          <div style="font-size:0.8rem;color:#8B6914;">${p.weight || ''}</div>
         </div>
         <span style="background:${p.active!==false?'#E8F5E9':'#FFEBEE'};color:${p.active!==false?'#2E7D32':'#c62828'};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:700;">${p.active!==false?'Active':'Hidden'}</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
         <div><label style="font-size:0.75rem;font-weight:700;color:#8B6914;">Price (₹)</label>
-          <input id="prod_price_${p.id}" type="number" value="${p.price}" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;box-sizing:border-box;"/>
+          <input id="prod_price_${p._id}" type="number" value="${p.price}" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;box-sizing:border-box;"/>
         </div>
         <div><label style="font-size:0.75rem;font-weight:700;color:#8B6914;">MRP (₹)</label>
-          <input id="prod_mrp_${p.id}" type="number" value="${p.mrp}" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;box-sizing:border-box;"/>
+          <input id="prod_mrp_${p._id}" type="number" value="${p.mrp}" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;box-sizing:border-box;"/>
         </div>
       </div>
-      <div style="margin-bottom:12px;"><label style="font-size:0.75rem;font-weight:700;color:#8B6914;">Image URL</label>
-        <input id="prod_img_${p.id}" type="text" value="${p.img||''}" placeholder="https://..." style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;box-sizing:border-box;"/>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:0.75rem;font-weight:700;color:#8B6914;">📸 Gallery Images (one URL per line)</label>
+        <textarea id="prod_gallery_${p._id}" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;min-height:80px;box-sizing:border-box;">${(p.gallery||[]).join('\\n')}</textarea>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="saveProduct(${p.id})" style="background:#3D1F00;color:white;border:none;border-radius:50px;padding:7px 18px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">💾 Save</button>
-        <button onclick="toggleProduct(${p.id},${p.active===false})" style="background:${p.active===false?'#4CAF50':'#FF8C00'};color:white;border:none;border-radius:50px;padding:7px 18px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">${p.active===false?'✅ Show':'🙈 Hide'}</button>
+        <button onclick="saveProduct('${p._id}')" style="background:#3D1F00;color:white;border:none;border-radius:50px;padding:7px 18px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">💾 Save</button>
+        <button onclick="toggleProduct('${p._id}',${p.active===false})" style="background:${p.active===false?'#4CAF50':'#FF8C00'};color:white;border:none;border-radius:50px;padding:7px 18px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">${p.active===false?'✅ Show':'🙈 Hide'}</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function saveProduct(id) {
   const price = parseFloat(document.getElementById('prod_price_'+id)?.value);
   const mrp   = parseFloat(document.getElementById('prod_mrp_'+id)?.value);
-  const img   = document.getElementById('prod_img_'+id)?.value?.trim();
-  const data  = await backendAdminFetch('/api/products/' + id, 'PATCH', { price, mrp, img });
+  const galleryText = document.getElementById('prod_gallery_'+id)?.value?.trim() || '';
+  const gallery = galleryText.split('\\n').filter(url => url.trim()).map(url => url.trim());
+  const data  = await backendAdminFetch('/api/products/' + id, 'PATCH', { price, mrp, gallery });
   if (data) { showToast('✅ Product updated!', 'success'); renderAdminProducts(); }
   else showToast('❌ Update failed', 'error');
 }
@@ -3697,25 +3702,23 @@ async function renderAdminInventory() {
   const list = document.getElementById('adminInventoryList');
   if (!list) return;
   list.innerHTML = '<p style="color:#8B6914;">Loading inventory...</p>';
-  const data = await backendAdminFetch('/api/inventory');
-  const items = data?.inventory || [];
-  if (!items.length) { list.innerHTML = '<p style="color:#8B6914;">No inventory data. Add stock levels below.</p>'; return; }
-  list.innerHTML = '<div style="max-width:700px;">' + items.map(item => `
+  const data = await backendAdminFetch('/api/products');
+  const prods = data?.products || data || [];
+  if (!prods.length) { list.innerHTML = '<p style="color:#8B6914;">No products. Add products first.</p>'; return; }
+  list.innerHTML = '<div style="max-width:700px;">' + prods.map(p => `
     <div class="inv-row">
-      <div style="flex:1;font-weight:700;color:#3D1F00;">${item.name}</div>
-      <div style="font-size:0.85rem;color:#8B6914;">Stock: <strong style="color:${(item.stock||0) <= (item.lowStockAlert||5) ? '#e53935' : '#2E7D32'}">${item.stock === -1 ? '∞' : item.stock}</strong></div>
+      <div style="flex:1;font-weight:700;color:#3D1F00;">${p.name}</div>
+      <div style="font-size:0.85rem;color:#8B6914;">Stock: <strong style="color:${(p.stock||0) <= 10 ? '#e53935' : '#2E7D32'}">${p.stock || 0}</strong></div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <input id="inv_${item.id}" type="number" value="${item.stock === -1 ? '' : item.stock}" placeholder="-1=unlimited" style="width:100px;border:2px solid #FFE066;border-radius:8px;padding:6px 10px;font-family:'Nunito',sans-serif;"/>
-        <input id="inv_alert_${item.id}" type="number" value="${item.lowStockAlert||5}" placeholder="Alert at" style="width:80px;border:2px solid #FFE066;border-radius:8px;padding:6px 10px;font-family:'Nunito',sans-serif;"/>
-        <button onclick="updateInventory(${item.id})" style="background:#3D1F00;color:white;border:none;border-radius:50px;padding:6px 14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">Save</button>
+        <input id="inv_${p._id}" type="number" value="${p.stock || 0}" placeholder="Stock" style="width:100px;border:2px solid #FFE066;border-radius:8px;padding:6px 10px;font-family:'Nunito',sans-serif;"/>
+        <button onclick="updateProductStock('${p._id}')" style="background:#3D1F00;color:white;border:none;border-radius:50px;padding:6px 14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">Save</button>
       </div>
     </div>`).join('') + '</div>';
 }
 
-async function updateInventory(id) {
-  const stock = parseInt(document.getElementById('inv_'+id)?.value ?? -1);
-  const lowStockAlert = parseInt(document.getElementById('inv_alert_'+id)?.value ?? 5);
-  await backendAdminFetch('/api/inventory/' + id, 'PATCH', { stock, lowStockAlert });
+async function updateProductStock(id) {
+  const stock = parseInt(document.getElementById('inv_'+id)?.value ?? 0);
+  await backendAdminFetch('/api/products/' + id, 'PATCH', { stock });
   showToast('✅ Stock updated!', 'success');
   renderAdminInventory();
 }
