@@ -3545,23 +3545,23 @@ async function renderAdminCoupons() {
   if (!list) return;
   list.innerHTML = '<p style="color:#8B6914;">Loading coupons...</p>';
   const data = await backendAdminFetch('/api/coupons');
-  if (!data || !data.coupons) { list.innerHTML = '<div style="padding:32px;text-align:center;"><p style="color:#e53935;font-weight:700;">❌ Failed to load coupons.</p><p style="color:#8B6914;font-size:0.85rem;">Make sure Railway is running and ADMIN_PASSWORD matches.</p></div>'; return; }
-  if (!data.coupons.length) { list.innerHTML = '<p style="color:#8B6914;padding:20px 0;">No coupons yet. Create one above.</p>'; return; }
-  list.innerHTML = data.coupons.map(c => `
+  const coupons = Array.isArray(data) ? data : (data?.coupons || []);
+  if (!coupons || !coupons.length) { list.innerHTML = '<p style="color:#8B6914;padding:20px 0;">No coupons yet. Create one above.</p>'; return; }
+  list.innerHTML = coupons.map(c => `
     <div class="coupon-card">
       <div>
         <div style="font-weight:900;color:#3D1F00;font-size:1rem;letter-spacing:1px;">${c.code}</div>
         <div style="font-size:0.8rem;color:#8B6914;margin-top:2px;">
-          ${c.type === 'percent' ? c.value+'% off' : '₹'+c.value+' off'}
-          ${c.minOrder ? ' • Min ₹'+c.minOrder : ''}
-          ${c.maxUses > 0 ? ' • '+c.usedCount+'/'+c.maxUses+' used' : ' • '+c.usedCount+' used'}
+          ${c.discountType === 'percentage' ? c.discountValue+'% off' : '₹'+c.discountValue+' off'}
+          ${c.minOrderValue ? ' • Min ₹'+c.minOrderValue : ''}
+          ${c.maxUses > 0 ? ' • '+c.used+'/'+c.maxUses+' used' : ' • '+c.used+' used'}
           ${c.expiresAt ? ' • Expires '+new Date(c.expiresAt).toLocaleDateString('en-IN') : ''}
         </div>
         ${c.description ? '<div style="font-size:0.75rem;color:#aaa;margin-top:2px;">'+c.description+'</div>' : ''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <span style="background:${c.active?'#E8F5E9':'#FFEBEE'};color:${c.active?'#2E7D32':'#c62828'};border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:700;">${c.active?'Active':'Inactive'}</span>
-        <button onclick="toggleCoupon('${c.code}',${!c.active})" style="background:${c.active?'#FF8C00':'#4CAF50'};color:white;border:none;border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;">${c.active?'Disable':'Enable'}</button>
+        <span style="background:${c.active!==false?'#E8F5E9':'#FFEBEE'};color:${c.active!==false?'#2E7D32':'#c62828'};border-radius:20px;padding:3px 12px;font-size:0.75rem;font-weight:700;">${c.active!==false?'Active':'Inactive'}</span>
+        <button onclick="toggleCoupon('${c.code}',${c.active===false})" style="background:${c.active!==false?'#FF8C00':'#4CAF50'};color:white;border:none;border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;">${c.active!==false?'Disable':'Enable'}</button>
         <button onclick="deleteCoupon('${c.code}')" style="background:#e53935;color:white;border:none;border-radius:20px;padding:4px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;">Delete</button>
       </div>
     </div>`).join('');
