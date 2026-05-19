@@ -3512,13 +3512,13 @@ async function addCustomerTag(email, tag) {
   const c = await backendAdminFetch('/api/customers/' + encodeURIComponent(email));
   if (!c) return;
   const tags = [...new Set([...(c.tags||[]), tag])];
-  await backendAdminFetch('/api/customers/' + encodeURIComponent(email), 'PATCH', { tags });
+  await backendAdminFetch('/api/customers/' + encodeURIComponent(email), 'PUT', { tags });
   showToast('✅ Tag added');
   renderAdminCustomers();
 }
 
 async function blockCustomer(email, blocked) {
-  await backendAdminFetch('/api/customers/' + encodeURIComponent(email), 'PATCH', { blocked });
+  await backendAdminFetch('/api/customers/' + encodeURIComponent(email), 'PUT', { blocked });
   showToast(blocked ? '🚫 Customer blocked' : '✅ Customer unblocked');
   renderAdminCustomers();
 }
@@ -3587,7 +3587,7 @@ async function createCoupon() {
 }
 
 async function toggleCoupon(code, active) {
-  await backendAdminFetch('/api/coupons/' + code, 'PATCH', { active });
+  await backendAdminFetch('/api/coupons/' + code, 'PUT', { active });
   showToast(active ? '✅ Coupon enabled' : 'Coupon disabled');
   renderAdminCoupons();
 }
@@ -3686,13 +3686,13 @@ async function saveProduct(id) {
   const mrp   = parseFloat(document.getElementById('prod_mrp_'+id)?.value);
   const galleryText = document.getElementById('prod_gallery_'+id)?.value?.trim() || '';
   const gallery = galleryText.split('\n').filter(url => url.trim()).map(url => url.trim());
-  const data  = await backendAdminFetch('/api/products/' + id, 'PATCH', { price, mrp, gallery });
+  const data  = await backendAdminFetch('/api/products/' + id, 'PUT', { price, mrp, gallery });
   if (data) { showToast('✅ Product updated!', 'success'); renderAdminProducts(); }
   else showToast('❌ Update failed', 'error');
 }
 
 async function toggleProduct(id, active) {
-  await backendAdminFetch('/api/products/' + id, 'PATCH', { active });
+  await backendAdminFetch('/api/products/' + id, 'PUT', { active });
   showToast(active ? '✅ Product shown' : '🙈 Product hidden');
   renderAdminProducts();
 }
@@ -3718,7 +3718,7 @@ async function renderAdminInventory() {
 
 async function updateProductStock(id) {
   const stock = parseInt(document.getElementById('inv_'+id)?.value ?? 0);
-  await backendAdminFetch('/api/products/' + id, 'PATCH', { stock });
+  await backendAdminFetch('/api/products/' + id, 'PUT', { stock });
   showToast('✅ Stock updated!', 'success');
   renderAdminInventory();
 }
@@ -3736,7 +3736,7 @@ async function loadAdminSettings() {
 
 async function saveSetting(key, value) {
   if (!value && value !== 0) { showToast('❌ Value cannot be empty', 'error'); return; }
-  const data = await backendAdminFetch('/api/settings', 'PATCH', { key, value });
+  const data = await backendAdminFetch('/api/settings', 'PUT', { key, value });
   if (data) {
     showToast('✅ Setting saved!', 'success');
     const msg = document.getElementById('settingsSaveMsg');
@@ -4572,7 +4572,7 @@ async function renderAdminOrders() {
 }
 
 async function adminUpdateStatus(orderId, status) {
-  const data = await backendAdminFetch('/api/orders/' + orderId, 'PATCH', { status });
+  const data = await backendAdminFetch('/api/orders/' + orderId, 'PUT', { status });
   if (!data) updateOrder(orderId, { status }); // fallback
   renderAdminStats();
   renderAdminOrders();
@@ -4581,7 +4581,7 @@ async function adminUpdateStatus(orderId, status) {
 
 async function adminSaveAWB(orderId) {
   const awb = (document.getElementById('awb_'+orderId)?.value||'').trim();
-  const data = await backendAdminFetch('/api/orders/' + orderId, 'PATCH', { awb });
+  const data = await backendAdminFetch('/api/orders/' + orderId, 'PUT', { awb });
   if (!data) { // fallback to local
     if (awb) updateOrder(orderId, { awb, status:'dispatched' });
     else updateOrder(orderId, { awb:'' });
@@ -4593,7 +4593,7 @@ async function adminSaveAWB(orderId) {
 
 async function adminSaveNote(orderId) {
   const notes = (document.getElementById('note_'+orderId)?.value||'').trim();
-  const data = await backendAdminFetch('/api/orders/' + orderId, 'PATCH', { notes });
+  const data = await backendAdminFetch('/api/orders/' + orderId, 'PUT', { notes });
   if (!data) updateOrder(orderId, { notes }); // fallback
   showToast('📝 Note saved');
 }
