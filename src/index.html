@@ -3671,7 +3671,7 @@ async function renderAdminProducts() {
       </div>
       <div style="margin-bottom:12px;">
         <label style="font-size:0.75rem;font-weight:700;color:#8B6914;">📸 Gallery Images (one URL per line)</label>
-        <textarea id="prod_gallery_${p._id}" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;min-height:80px;box-sizing:border-box;">${(p.gallery||[]).join('\\n')}</textarea>
+        <textarea id="prod_gallery_${p._id}" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg" style="width:100%;border:2px solid #FFE066;border-radius:8px;padding:8px;font-family:'Nunito',sans-serif;min-height:80px;box-sizing:border-box;">${(p.gallery||[]).join('\n')}</textarea>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="saveProduct('${p._id}')" style="background:#3D1F00;color:white;border:none;border-radius:50px;padding:7px 18px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;">💾 Save</button>
@@ -3685,7 +3685,7 @@ async function saveProduct(id) {
   const price = parseFloat(document.getElementById('prod_price_'+id)?.value);
   const mrp   = parseFloat(document.getElementById('prod_mrp_'+id)?.value);
   const galleryText = document.getElementById('prod_gallery_'+id)?.value?.trim() || '';
-  const gallery = galleryText.split('\\n').filter(url => url.trim()).map(url => url.trim());
+  const gallery = galleryText.split('\n').filter(url => url.trim()).map(url => url.trim());
   const data  = await backendAdminFetch('/api/products/' + id, 'PATCH', { price, mrp, gallery });
   if (data) { showToast('✅ Product updated!', 'success'); renderAdminProducts(); }
   else showToast('❌ Update failed', 'error');
