@@ -9,6 +9,7 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <meta name="author" content="Mango Direct" />
   <meta name="geo.region" content="IN-MH" />
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' data: blob: https: https://raw.githubusercontent.com https://www.claudeusercontent.com https://*.tile.openstreetmap.org/;" />
   <meta name="geo.placename" content="Ratnagiri, Maharashtra, India" />
   <meta name="geo.position" content="17.0044;73.3028" />
   <meta name="ICBM" content="17.0044, 73.3028" />
@@ -2548,6 +2549,7 @@ const products = [
 ];
 
 let cart = [];
+let appliedCoupon = null;
 let currentProduct = null;
 
 // ── NAVIGATION ──
