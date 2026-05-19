@@ -2502,8 +2502,19 @@ const products = [
     {
         id: 'a1-plus',
         name: 'Alphonso A1+ Premium Box',
+        variety: 'Premium',
+        badge: 'A1+ Grade',
         weight: 'Up to 250gm each',
         description: '1 Dozen (12 pieces) | Up to 250gm each | Premium Grade | Gift Box',
+        desc: 'Premium Grade Alphonso mangoes, hand-picked from Ratnagiri orchards. Perfect sweetness and juiciness.',
+        price: 1799,
+        mrp: 1999,
+        emoji: '🥭',
+        img: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 250%22%3E%3Crect fill=%22%23FDD835%22 width=%22200%22 height=%22250%22/%3E%3Cellipse cx=%22100%22 cy=%22120%22 rx=%2260%22 ry=%2280%22 fill=%22%23FFB800%22/%3E%3Cellipse cx=%2280%22 cy=%2290%22 rx=%2220%22 ry=%2225%22 fill=%22%23FDD835%22 opacity=%220.6%22/%3E%3C/svg%3E',
+        gallery: [],
+        rating: 5,
+        reviewCount: 342,
+        weights: ['1 Dozen', '2 Dozen', '3 Dozen', '5 Dozen'],
         quantities: [
             { dozen: '1 Dozen', price: 1799 },
             { dozen: '2 Dozen', price: 3499 },
@@ -2514,8 +2525,19 @@ const products = [
     {
         id: 'a1-classic',
         name: 'Alphonso A1 Classic Box',
+        variety: 'Classic',
+        badge: 'A1 Grade',
         weight: '200-250gm each',
         description: '1 Dozen (12 pieces) | 200-250gm each | Standard Grade | Gift Box',
+        desc: 'Classic Grade Alphonso mangoes with excellent flavor. Best value for bulk orders.',
+        price: 1499,
+        mrp: 1799,
+        emoji: '🥭',
+        img: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 250%22%3E%3Crect fill=%22%23FFB800%22 width=%22200%22 height=%22250%22/%3E%3Cellipse cx=%22100%22 cy=%22120%22 rx=%2255%22 ry=%2275%22 fill=%22%23FF9500%22/%3E%3Cellipse cx=%2280%22 cy=%2290%22 rx=%2218%22 ry=%2222%22 fill=%22%23FFB800%22 opacity=%220.6%22/%3E%3C/svg%3E',
+        gallery: [],
+        rating: 4,
+        reviewCount: 289,
+        weights: ['1 Dozen', '2 Dozen', '3 Dozen', '5 Dozen'],
         quantities: [
             { dozen: '1 Dozen', price: 1499 },
             { dozen: '2 Dozen', price: 2899 },
@@ -2584,7 +2606,7 @@ function renderProducts() {
     return;
   }
   grid.innerHTML = filtered.map(p => `
-    <div class="product-card" data-name="${p.name}" data-variety="${p.variety||''}" data-badge="${p.badge||''}" onclick="showDetail(${p.id})" style="cursor:pointer;">
+    <div class="product-card" data-name="${p.name}" data-variety="${p.variety||''}" data-badge="${p.badge||''}" onclick="showDetail('${p.id}')" style="cursor:pointer;">
       <div class="product-img" style="position:relative;overflow:hidden;padding:0;">
         <span class="product-badge" style="z-index:2;">${p.badge}</span>
         <img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:0;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
@@ -2595,8 +2617,8 @@ function renderProducts() {
         <div class="desc">${p.desc.substring(0,90)}...</div>
         <div class="price">₹${p.price} <span>₹${p.mrp}</span></div>
         <div class="product-actions">
-          <button class="btn-add" onclick="addToCart(${p.id}, event)">+ Add to Cart</button>
-          <button class="btn-view" onclick="event.stopPropagation();showDetail(${p.id})">View</button>
+          <button class="btn-add" onclick="addToCart('${p.id}', event)">+ Add to Cart</button>
+          <button class="btn-view" onclick="event.stopPropagation();showDetail('${p.id}')">View</button>
         </div>
       </div>
     </div>
@@ -2809,6 +2831,14 @@ function showDetail(id) {
     selectedWeight = w;
     document.querySelectorAll('.weight-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    // Update price display based on selected weight
+    const selectedQty = currentProduct.quantities.find(q => q.dozen === w);
+    if (selectedQty) {
+      const newPrice = selectedQty.price;
+      const newMrp = currentProduct.mrp * (newPrice / currentProduct.price);
+      const discount = Math.round((1 - newPrice / newMrp) * 100);
+      document.querySelector('.detail-price').innerHTML = `₹${newPrice} <span style="font-size:1rem;color:#aaa;text-decoration:line-through;font-weight:400;margin-left:8px">₹${Math.round(newMrp)}</span> <span style="font-size:0.85rem;background:var(--green);color:white;padding:3px 10px;border-radius:50px;font-weight:700;margin-left:8px">${discount}% OFF</span>`;
+    }
   };
   window.changeQty = function(delta) {
     qty = Math.max(1, qty + delta);
