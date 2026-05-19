@@ -4089,7 +4089,7 @@ function checkPincode() {
   if (data) {
     const icon = data.t==='24'?'⚡':data.t==='48'?'🚀':'📦';
     const color = data.t==='24'?'#2E7D32':data.t==='48'?'#1565C0':'#E65100';
-    resultBox.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:1.4rem;">${icon}</span><div><strong style="color:${color};font-size:1rem;">${data.l}</strong><br/><span style="font-size:0.85rem;color:#8B6914;">BlueDart Hub: ${data.a} · We deliver to PIN ${pin}</span></div></div>`;
+    resultBox.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:1.4rem;">${icon}</span><div><strong style="color:${color};font-size:1rem;">${data.l}</strong><br/><span style="font-size:0.85rem;color:#8B6914;">We deliver to PIN ${pin}</span></div></div>`;
     resultBox.style.borderColor = color;
     resultBox.style.background = data.t==='24'?'#F1F8E9':data.t==='48'?'#E3F2FD':'#FFF3E0';
   } else {
