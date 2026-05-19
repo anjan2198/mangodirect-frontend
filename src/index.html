@@ -2916,11 +2916,23 @@ function renderCart() {
 
   const subtotal = cart.reduce((s,i) => s + i.price*i.qty, 0);
   const delivery = 0;
-  const total = subtotal + delivery;
+  
+  // Calculate discount if coupon is applied
+  let discount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.type === 'percent') {
+      discount = Math.round(subtotal * appliedCoupon.value / 100);
+    } else if (appliedCoupon.type === 'flat') {
+      discount = appliedCoupon.value;
+    }
+  }
+  
+  const total = subtotal - discount + delivery;
 
   summary.innerHTML = `
     <h3>Order Summary</h3>
     <div class="summary-row"><span>Subtotal (${cart.reduce((s,i)=>s+i.qty,0)} dozen)</span><span>₹${subtotal}</span></div>
+    ${discount > 0 ? `<div class="summary-row discount"><span>✅ ${appliedCoupon.code} - ${appliedCoupon.type === 'percent' ? appliedCoupon.value + '%' : '₹' + appliedCoupon.value}</span><span style="color:var(--sun-deep);">-₹${discount}</span></div>` : ''}
     ${delivery > 0 ? `` : ''}
     <div class="coupon-wrap">
       <input type="text" placeholder="Coupon code" id="couponInput"/>
