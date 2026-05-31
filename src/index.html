@@ -2979,22 +2979,27 @@ async function applyCoupon() {
   const subtotal = cart.reduce((s,i) => s+i.price*i.qty, 0);
 
   try {
+    // Get customer email from checkout form if available
+    const emailInput = document.getElementById('email');
+    const customerEmail = emailInput?.value?.trim() || 'guest@email.com';
+
     // Validate against backend first
     const res = await fetch(BACKEND_URL + '/api/coupons/validate', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ code, orderAmount: subtotal })
+      body: JSON.stringify({ code, orderAmount: subtotal, customerEmail })
     });
     const data = await res.json();
 
-    if (data.valid) {
-      appliedCoupon = { code, type: data.coupon.type, value: data.coupon.value, desc: data.coupon.description };
-      showToast('✅ Coupon ' + code + ' applied — ' + data.coupon.description, 'success');
+    if (data.success) {
+      appliedCoupon = { code, type: data.discountType, value: data.discount };
+      showToast('✅ Coupon ' + code + ' applied — ' + data.discount + (data.discountType === 'percentage' ? '%' : '₹') + ' off', 'success');
       renderCart();
+      renderCheckoutSummary();
       return;
     }
-    // If backend says invalid, fall through to local check
-    if (data.error && data.error !== 'Coupon not found') {
+    // If backend says invalid, show error
+    if (data.error) {
       showToast('❌ ' + data.error, 'error');
       return;
     }
@@ -3008,6 +3013,7 @@ async function applyCoupon() {
     MANGO10:   { type:'percent', value:10,  desc:'10% off your order' },
     MANGO15:   { type:'percent', value:15,  desc:'15% off your order' },
     MANGO50:   { type:'flat',    value:50,  desc:'₹50 off your order' },
+    SUMMER20:  { type:'percent', value:20,  desc:'20% off your order' },
     FRESH20:   { type:'percent', value:20,  desc:'20% off your order' },
     SPIN10:    { type:'percent', value:10,  desc:'10% off (Spin reward)' },
     SPIN150:   { type:'flat',    value:150, desc:'₹150 off (Spin reward)' },
