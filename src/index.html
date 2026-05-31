@@ -3078,18 +3078,31 @@ function updateIntlShipping() {
 // ── CHECKOUT SUMMARY ──
 function renderCheckoutSummary() {
   const subtotal = cart.reduce((s,i) => s + i.price*i.qty, 0);
-  let delivery, deliveryLabel, totalLabel;
+  let delivery, deliveryLabel, discount = 0, totalLabel;
+
+  // Calculate discount from applied coupon
+  if (appliedCoupon) {
+    if (appliedCoupon.type === 'percent') {
+      discount = Math.round(subtotal * appliedCoupon.value / 100);
+    } else if (appliedCoupon.type === 'flat') {
+      discount = appliedCoupon.value;
+    }
+  }
 
   if (shippingMode === 'international') {
     const country = document.getElementById('intlCountry')?.value;
     deliveryLabel = country ? `✈️ To be confirmed (${intlShippingRates[country]?.label || ''})` : '✈️ Select country to see charges';
     delivery = 0;
-    totalLabel = `₹${subtotal} + shipping`;
+    const finalTotal = subtotal - discount + delivery;
+    totalLabel = `₹${finalTotal} + shipping`;
   } else {
     delivery = 0;
     deliveryLabel = '<span style="color:var(--green);font-weight:700">FREE</span>';
-    totalLabel = `₹${subtotal + delivery}`;
+    const finalTotal = subtotal - discount + delivery;
+    totalLabel = `₹${finalTotal}`;
   }
+
+  const finalTotal = subtotal - discount + delivery;
 
   const intlQtyRow = shippingMode === 'international'
     ? `<div class="summary-row"><span>🥭 Quantity</span><span>${dozenQty} Dozen (${dozenQty*12} mangoes)</span></div>`
@@ -3111,10 +3124,11 @@ function renderCheckoutSummary() {
     `).join('')}
     ${intlQtyRow}
     <div class="summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+    ${discount > 0 ? `<div class="summary-row" style="color:var(--green);font-weight:700"><span>Discount</span><span>-₹${discount}</span></div>` : ''}
     ${shippingMode === 'international' ? `<div style="font-size:0.8rem;color:#8B6914;margin-bottom:10px">International shipping charges will be confirmed before dispatch.</div>` : ''}
     <div class="summary-row total"><span>Total</span><span>${totalLabel}</span></div>
-    <button class="razorpay-btn" onclick="initiatePayment(${subtotal + delivery})">
-      💳 Pay ${shippingMode === 'international' ? '& Confirm Order' : `₹${subtotal+delivery}`} with Razorpay
+    <button class="razorpay-btn" onclick="initiatePayment(${finalTotal})">
+      💳 Pay ${shippingMode === 'international' ? '& Confirm Order' : `₹${finalTotal}`} with Razorpay
     </button>
     <div class="secure-note">🔒 Secured by Razorpay · SSL Encrypted</div>
   `;
