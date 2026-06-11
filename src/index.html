@@ -2992,8 +2992,14 @@ async function applyCoupon() {
     const data = await res.json();
 
     if (data.success) {
-      appliedCoupon = { code, type: data.discountType, value: data.discount };
-      showToast('✅ Coupon ' + code + ' applied — ' + data.discount + (data.discountType === 'percentage' ? '%' : '₹') + ' off', 'success');
+      // Convert backend format to frontend format
+      let discountType = data.discountType;
+      if (discountType === 'percentage') discountType = 'percent';
+      if (discountType === 'fixed') discountType = 'flat';
+      
+      appliedCoupon = { code, type: discountType, value: data.discount };
+      const discountMsg = discountType === 'percent' ? data.discount + '% off' : '₹' + data.discount + ' off';
+      showToast('✅ Coupon ' + code + ' applied — ' + discountMsg, 'success');
       renderCart();
       renderCheckoutSummary();
       return;
