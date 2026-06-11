@@ -3022,8 +3022,10 @@ async function applyCoupon() {
 
   if (LOCAL_COUPONS[code]) {
     appliedCoupon = { code, ...LOCAL_COUPONS[code] };
-    showToast('✅ Coupon ' + code + ' applied — ' + LOCAL_COUPONS[code].desc, 'success');
+    const discountMsg = LOCAL_COUPONS[code].type === 'percent' ? LOCAL_COUPONS[code].value + '% off' : '₹' + LOCAL_COUPONS[code].value + ' off';
+    showToast('✅ Coupon ' + code + ' applied — ' + discountMsg, 'success');
     renderCart();
+    renderCheckoutSummary();
   } else {
     showToast('❌ Invalid or expired coupon code', 'error');
     if (input) { input.style.borderColor='#e53935'; setTimeout(()=>input.style.borderColor='',2000); }
