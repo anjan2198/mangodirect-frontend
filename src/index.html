@@ -4571,9 +4571,18 @@ async function renderAdminOrders() {
   const sl = {pending:'🕐 Pending',processing:'⚙️ Processing',dispatched:'🚚 Dispatched',delivered:'✅ Delivered',cancelled:'❌ Cancelled'};
   container.innerHTML = orders.map(o=>{
     const oid = o.orderId || o.id;
-    const itemsDisplay = Array.isArray(o.items) 
-      ? o.items.map(item => `${item.name || 'Item'} x${item.qty || 1}`).join(', ')
-      : o.items || 'N/A';
+    const itemsDisplay = (() => {
+      if (!o.items) return 'N/A';
+      if (Array.isArray(o.items) && o.items.length > 0) {
+        return o.items.map(item => {
+          const name = item.name || 'Item';
+          const qty = item.qty || 1;
+          const unit = item.weight ? ` (${item.weight})` : '';
+          return `${name} x${qty}${unit}`;
+        }).join(', ');
+      }
+      return 'N/A';
+    })();
     const orderDate = o.createdAt || o.date;
     const dateStr = orderDate 
       ? new Date(orderDate).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
